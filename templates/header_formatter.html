@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}请求头格式化工具{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0">请求头格式化工具</h5>
+    </div>
+    <div class="card-body">
+        <div class="mb-3">
+            <label for="raw_headers" class="form-label">输入原始请求头:</label>
+            <textarea class="form-control" id="raw_headers" rows="5" placeholder="例如:
+User-Agent: Mozilla/5.0
+Accept: text/html
+Referer: https://example.com"></textarea>
+        </div>
+        <button id="format_btn" class="btn btn-success">格式化</button>
+        
+        <div class="mt-4">
+            <label class="form-label">格式化后的Python字典:</label>
+            <pre class="bg-dark text-white p-3 rounded"><code id="formatted_headers" class="language-python"># 格式化结果将显示在这里</code></pre>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('format_btn').addEventListener('click', function() {
+    const rawHeaders = document.getElementById('raw_headers').value.trim();
+    if (!rawHeaders) {
+        alert('请输入请求头内容');
+        return;
+    }
+    
+    fetch('/header-formatter', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `raw_headers=${encodeURIComponent(rawHeaders)}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('formatted_headers').textContent = data.formatted_headers;
+        Prism.highlightAll();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('格式化过程中出错');
+    });
+});
+</script>
+{% endblock %}
+
+

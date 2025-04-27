@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}IP信息查询{% endblock %}
+{% block content %}
+<div class="card h-100 tool-card" style="max-width: 540px; margin: 40px auto;">
+    <div class="card-header bg-warning text-dark">
+        <i class="bi bi-globe2 me-2"></i>IP信息查询
+    </div>
+    <div class="card-body">
+        <h5 class="card-title">IP信息查询工具</h5>
+        <p class="card-text">显示当前客户端IP地址及浏览器User-Agent信息</p>
+        <div class="mb-3">
+            <label class="form-label">客户端IP：</label>
+            <input class="form-control" value="{{ info.ip }}" readonly>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">User-Agent：</label>
+            <textarea class="form-control" rows="2" readonly style="white-space:break-spaces;">{{ info.user_agent }}</textarea>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Accept：</label>
+            <input class="form-control" value="{{ info.accept }}" readonly>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Accept-Language：</label>
+            <input class="form-control" value="{{ info.accept_language }}" readonly>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Accept-Encoding：</label>
+            <input class="form-control" value="{{ info.accept_encoding }}" readonly>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Referer：</label>
+            <input class="form-control" value="{{ info.referer }}" readonly>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Host：</label>
+            <input class="form-control" value="{{ info.host }}" readonly>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Connection：</label>
+            <input class="form-control" value="{{ info.connection }}" readonly>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">X-Forwarded-For：</label>
+            <input class="form-control" value="{{ info.x_forwarded_for }}" readonly>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">X-Real-IP：</label>
+            <input class="form-control" value="{{ info.x_real_ip }}" readonly>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">remote_addr：</label>
+            <input class="form-control" value="{{ info.remote_addr }}" readonly>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">请求方法：</label>
+            <input class="form-control" value="{{ info.method }}" readonly>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">协议：</label>
+            <input class="form-control" value="{{ info.protocol }}" readonly>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">端口：</label>
+            <input class="form-control" value="{{ info.port }}" readonly>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">HTTPS：</label>
+            <input class="form-control" value="{{ '是' if info.is_https else '否' }}" readonly>
+        </div>
+        <div class="text-end">
+            <a href="/" class="btn btn-outline-secondary">返回首页</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

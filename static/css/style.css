@@ -1,0 +1,51 @@
+/* 动画效果 */
+@keyframes cardEntrance {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.tool-card {
+    animation: cardEntrance 0.5s ease-out;
+    animation-fill-mode: backwards;
+    transition: all 0.3s ease;
+}
+
+/* 延迟动画 */
+.tool-card:nth-child(1) { animation-delay: 0.1s; }
+.tool-card:nth-child(2) { animation-delay: 0.2s; }
+.tool-card:nth-child(3) { animation-delay: 0.3s; }
+
+/* 模态框样式 */
+#quickModal .modal-content {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+#quickModal .modal-header {
+    background-color: var(--bs-primary);
+    color: white;
+}
+
+/* 复制按钮样式 */
+.copy-btn {
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.copy-btn:hover {
+    opacity: 0.8;
+    transform: translateY(-1px);
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .tool-card {
+        animation: none !important;
+    }
+}

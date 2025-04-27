@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}User-Agent生成器{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">User-Agent生成器</h5>
+    </div>
+    <div class="card-body">
+        <div class="mb-3">
+            <label class="form-label">选择设备类型:</label>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="device_type" id="desktop" value="desktop" checked>
+                <label class="form-check-label" for="desktop">桌面设备</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="device_type" id="mobile" value="mobile">
+                <label class="form-check-label" for="mobile">移动设备</label>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">选择UA模板:</label>
+            <select class="form-select" id="ua_template_select"></select>
+        </div>
+        <button id="generate_btn" class="btn btn-info">生成User-Agent</button>
+        <div class="mt-4">
+            <label class="form-label">生成的User-Agent:</label>
+            <textarea class="form-control" id="user_agent" rows="3" readonly></textarea>
+            <button id="copy_btn" class="btn btn-sm btn-outline-secondary mt-2">复制到剪贴板</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function loadTemplates(deviceType) {
+    fetch(`/ua-templates?device_type=${deviceType}`)
+        .then(res => res.json())
+        .then(data => {
+            const select = document.getElementById('ua_template_select');
+            select.innerHTML = '';
+            data.templates.forEach(function(item) {
+                const option = document.createElement('option');
+                option.value = item.index;
+                option.text = item.template;
+                select.appendChild(option);
+            });
+        });
+}
+
+// 初始化模板
+window.addEventListener('DOMContentLoaded', function() {
+    const deviceType = document.querySelector('input[name="device_type"]:checked').value;
+    loadTemplates(deviceType);
+});
+
+// 切换设备类型时刷新模板
+const radios = document.querySelectorAll('input[name="device_type"]');
+radios.forEach(function(radio) {
+    radio.addEventListener('change', function() {
+        loadTemplates(this.value);
+    });
+});
+
+document.getElementById('generate_btn').addEventListener('click', function() {
+    const deviceType = document.querySelector('input[name="device_type"]:checked').value;
+    const templateIndex = document.getElementById('ua_template_select').value;
+    fetch('/ua-generator', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `device_type=${deviceType}&template_index=${templateIndex}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('user_agent').value = data.user_agent;
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('生成过程中出错');
+    });
+});
+
+document.getElementById('copy_btn').addEventListener('click', function() {
+    const uaText = document.getElementById('user_agent');
+    uaText.select();
+    document.execCommand('copy');
+    alert('已复制到剪贴板');
+});
+</script>
+{% endblock %}
+
+
+

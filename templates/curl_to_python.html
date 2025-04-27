@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}cURL转Python代码{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">cURL转Python代码</h5>
+    </div>
+    <div class="card-body">
+        <div class="mb-3">
+            <label for="curl_command" class="form-label">输入cURL命令:</label>
+            <textarea class="form-control" id="curl_command" rows="5" placeholder="例如: curl 'https://example.com' -H 'User-Agent: Mozilla/5.0'"></textarea>
+        </div>
+        <button id="convert_btn" class="btn btn-primary">转换为Python代码</button>
+        
+        <div class="mt-4">
+            <label class="form-label">生成的Python代码:</label>
+            <pre class="bg-dark text-white p-3 rounded"><code id="python_code" class="language-python"># 转换结果将显示在这里</code></pre>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('convert_btn').addEventListener('click', function() {
+    const curlCommand = document.getElementById('curl_command').value.trim();
+    if (!curlCommand) {
+        alert('请输入cURL命令');
+        return;
+    }
+    
+    fetch('/curl-to-python', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `curl_command=${encodeURIComponent(curlCommand)}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('python_code').textContent = data.python_code;
+        Prism.highlightAll();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('转换过程中出错');
+    });
+});
+</script>
+{% endblock %}
+
+
+

@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block title %}爬虫工具箱 - 首页{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- 搜索和快速入口 -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="input-group">
+                <input type="text" class="form-control" id="toolSearch" placeholder="搜索工具...">
+                <button class="btn btn-outline-secondary" type="button">
+                    <i class="bi bi-search"></i>
+                </button>
+            </div>
+        </div>
+        <div class="col-md-4 text-end">
+            <div class="btn-group">
+                <button class="btn btn-primary" id="quickCurl">cURL转换</button>
+                <button class="btn btn-success" id="quickUA">生成UA</button>
+                <button class="btn btn-info" id="quickProxy">测试代理</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 功能卡片展示 -->
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="toolCards">
+        <!-- 动态生成卡片 -->
+        <div class="col">
+            <div class="card h-100 tool-card" data-tags="curl python 代码转换">
+                <div class="card-header bg-primary text-white">
+                    <i class="bi bi-terminal me-2"></i>cURL转Python
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">cURL命令转换工具</h5>
+                    <p class="card-text">将cURL命令快速转换为Python requests代码，支持自动识别请求头和参数</p>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <a href="/curl-to-python" class="btn btn-primary">立即使用</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="card h-100 tool-card" data-tags="header 格式化 请求头">
+                <div class="card-header bg-success text-white">
+                    <i class="bi bi-code-square me-2"></i>请求头格式化
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">HTTP头格式化工具</h5>
+                    <p class="card-text">将原始请求头转换为Python字典格式，自动处理特殊字符和大小写</p>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <a href="/header-formatter" class="btn btn-success">立即使用</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="card h-100 tool-card" data-tags="ua user-agent 生成">
+                <div class="card-header bg-info text-white">
+                    <i class="bi bi-phone me-2"></i>UA生成器
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">User-Agent生成工具</h5>
+                    <p class="card-text">生成最新浏览器User-Agent，支持桌面和移动设备类型</p>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <a href="/ua-generator" class="btn btn-info">立即使用</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="card h-100 tool-card" data-tags="ip 信息查询 ipinfo">
+                <div class="card-header bg-warning text-dark">
+                    <i class="bi bi-globe2 me-2"></i>IP信息查询
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">IP信息查询工具</h5>
+                    <p class="card-text">显示当前客户端IP地址及浏览器User-Agent信息</p>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <a href="/ip-info" class="btn btn-warning">立即使用</a>
+                </div>
+            </div>
+        </div>
+        <!-- 更多工具卡片... -->
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .tool-card {
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .tool-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+    }
+    
+    #toolSearch:focus {
+        box-shadow: 0 0 0 0.25rem rgba(13,110,253,0.25);
+    }
+    
+    .card-header i {
+        font-size: 1.2rem;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// 搜索功能
+document.getElementById('toolSearch').addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    document.querySelectorAll('.tool-card').forEach(card => {
+        const tags = card.dataset.tags.toLowerCase();
+        card.style.display = tags.includes(searchTerm) ? 'block' : 'none';
+    });
+});
+
+// 卡片点击效果
+document.querySelectorAll('.tool-card').forEach(card => {
+    card.addEventListener('click', (e) => {
+        if (!e.target.closest('a')) {
+            card.querySelector('a').click();
+        }
+    });
+});
+
+// 快速入口功能
+document.getElementById('quickUA').addEventListener('click', async () => {
+    try {
+        const response = await fetch('/ua-generator', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'device_type=desktop'
+        });
+        const data = await response.json();
+        
+        const modal = new bootstrap.Modal(document.getElementById('quickModal'));
+        document.getElementById('modalContent').innerHTML = `
+            <div class="alert alert-success">生成的User-Agent：</div>
+            <textarea class="form-control" rows="3">${data.user_agent}</textarea>
+        `;
+        modal.show();
+    } catch (error) {
+        console.error('Error:', error);
+    }
+});
+
+// 快速模态框模板
+const modalTemplate = `
+<div class="modal fade" id="quickModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">快速生成结果</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="modalContent"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+        <button type="button" class="btn btn-primary" onclick="copyContent()">复制</button>
+      </div>
+    </div>
+  </div>
+</div>`;
+
+document.body.insertAdjacentHTML('beforeend', modalTemplate);
+
+function copyContent() {
+    const textarea = document.querySelector('#quickModal textarea');
+    if (textarea) {
+        textarea.select();
+        document.execCommand('copy');
+        alert('已复制到剪贴板！');
+    }
+}
+</script>
+{% endblock %}
+
+
+
