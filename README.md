@@ -28,14 +28,18 @@
 ```
 
 ## 安装与运行
+1. 下载项目：
+  ```bash
+https://github.com/ItzReimu/Reimu_Crawler_Toolbox/
+```
 
-1. 安装依赖：
+2. 安装依赖：
 
 ```bash
 pip install -r requirements.txt
 ```
 
-2. 启动服务：
+3. 启动服务：
 
 ```bash
 python app.py
