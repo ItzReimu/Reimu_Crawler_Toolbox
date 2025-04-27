@@ -30,7 +30,7 @@
 ## 安装与运行
 1. 下载项目：
   ```bash
-https://github.com/ItzReimu/Reimu_Crawler_Toolbox/
+git clone https://github.com/ItzReimu/Reimu_Crawler_Toolbox/
 ```
 
 2. 安装依赖：
