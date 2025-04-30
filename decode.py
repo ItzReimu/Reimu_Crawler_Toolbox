@@ -36,7 +36,7 @@ class AdvancedMultiDecoder:
             b'', b' ', b'0', b'1', b'123', b'1234', b'12345', 
             b'123456', b'1234567', b'12345678', b'123456789',
             b'password', b'admin', b'root', b'key', b'secret',
-            b'qwerty', b'abc123', b'letmein', b'welcome'
+            b'qwerty', b'abc123', b'letmein', b'welcome',b'hello',b'helloworld',b'secretkey',b'abc',b'abcdefg',b'a'
         ]
         
         # 初始化所有支持的算法
@@ -272,17 +272,18 @@ class AdvancedMultiDecoder:
         try:
             text = data.decode('utf-8', errors='ignore')
             for offset in range(1, 6):
+                # 正向偏移
                 decoded_forward = self._apply_char_shift(text, offset)
                 if self._looks_valid(decoded_forward):
                     return f"Forward shift {offset}: {decoded_forward}"
                 
+                # 反向偏移
                 decoded_backward = self._apply_char_shift(text, -offset)
                 if self._looks_valid(decoded_backward):
                     return f"Backward shift {offset}: {decoded_backward}"
             return None
         except:
             return None
-
     def _apply_char_shift(self, text, offset):
         result = []
         for char in text:
@@ -301,27 +302,24 @@ class AdvancedMultiDecoder:
             code = ord(char)
             if (32 <= code <= 126) or (0x4E00 <= code <= 0x9FFF):
                 valid_chars += 1
-        return valid_chars / len(text) > 0.5  
+        return valid_chars / len(text) > 0.3  
     def try_caesar_cipher(self, data):
-        try:
-            text = data.decode()
-            if not text.isalpha():
+            try:
+                text = data.decode()
+                results = []
+                for shift in range(1, 26):
+                    decrypted = []
+                    for char in text:
+                        if char.isupper():
+                            decrypted.append(chr((ord(char) - ord('A') - shift) % 26 + ord('A')))
+                        elif char.islower():
+                            decrypted.append(chr((ord(char) - ord('a') - shift) % 26 + ord('a')))
+                        else:
+                            decrypted.append(char)  # 保留非字母字符
+                    results.append(f"Shift {shift}: {''.join(decrypted)}")
+                return "\n".join(results)
+            except:
                 return None
-            
-            results = []
-            for shift in range(1, 26):
-                decrypted = []
-                for char in text:
-                    if char.isupper():
-                        decrypted.append(chr((ord(char) - ord('A') - shift) % 26 + ord('A')))
-                    elif char.islower():
-                        decrypted.append(chr((ord(char) - ord('a') - shift) % 26 + ord('a')))
-                    else:
-                        decrypted.append(char)
-                results.append(f"Shift {shift}: {''.join(decrypted)}")
-            return "\n".join(results)
-        except:
-            return None
     
     def try_caesar_5shift(self, data):
         try:
@@ -510,7 +508,8 @@ class AdvancedMultiDecoder:
                 return plaintext
             
             results = []
-            for key in ['KEY', 'SECRET', 'PASSWORD', 'CRYPTO']:
+            for key in ['KEY', 'SECRET', 'PASSWORD', 'CRYPTO',
+            'A', 'B', 'C', 'D', '123', 'ADMIN', 'CODE', 'HELLO' ,'WORLD', 'E' ,'ABC', 'HELLOWORLD']:
                 results.append(f"Key '{key}': {decrypt(text.upper(), key.upper())}")
             
             return "\n".join(results)
