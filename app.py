@@ -113,12 +113,19 @@ def convert_curl_to_python(curl_command):
 def format_headers(raw_headers):
     try:
         headers = {}
-        lines = raw_headers.strip().split('\n')
-        for line in lines:
-            if ':' in line:
-                key, value = line.split(':', 1)
-                headers[key.strip()] = value.strip()
-        return json.dumps(headers, indent=4)
+        lines = [line.rstrip() for line in raw_headers.strip().replace('\r\n', '\n').replace('\r', '\n').split('\n') if line.strip()]
+        i = 0
+        while i < len(lines):
+            line = lines[i]
+            if line.endswith(':'):
+                key = line[:-1].strip()
+                value = ""
+                if i + 1 < len(lines) and not lines[i + 1].endswith(':'):
+                    value = lines[i + 1].strip()
+                    i += 1
+                headers[key] = value
+            i += 1
+        return json.dumps(headers, indent=4, ensure_ascii=False)
     except Exception as e:
         return f"格式化出错: {str(e)}"
 
