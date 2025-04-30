@@ -1,3 +1,4 @@
+from crypt import methods
 from flask import Flask, render_template, request, jsonify
 import re
 import json
@@ -167,7 +168,6 @@ def generate_user_agent(device_type, template_index=None):
 
 @app.route('/ip-info', methods=['GET', 'POST'])
 def ip_info():
-    from flask import request, jsonify
     if request.method == 'POST':
         info = get_client_ip_info()
         return jsonify(info)
@@ -177,7 +177,6 @@ def ip_info():
 
 # 获取客户端IP及相关信息
 def get_client_ip_info():
-    from flask import request
     info = {
         'ip': request.headers.get('X-Forwarded-For', request.remote_addr),
         'remote_addr': request.remote_addr,
@@ -198,6 +197,9 @@ def get_client_ip_info():
     }
     return info
 
+@app.route('/decode', methods=['GET','POST'])
+def decode():
+    pass
 
 if __name__ == '__main__':
     app.run(debug=True, port=4303, host='0.0.0.0')
