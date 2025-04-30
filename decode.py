@@ -223,7 +223,7 @@ class AdvancedMultiDecoder:
             return str(decoded)
         except:
             return None
-    # 4/30新加unicode码点解密
+    # 4/30新加unicode码点解密和字符偏移
     def try_unicode_codepoint(self, data):
         try:
             text = data.decode('utf-8', errors='ignore')
@@ -268,7 +268,40 @@ class AdvancedMultiDecoder:
             return None
 
 
+    def try_char_shift(self, data):
+        try:
+            text = data.decode('utf-8', errors='ignore')
+            for offset in range(1, 6):
+                decoded_forward = self._apply_char_shift(text, offset)
+                if self._looks_valid(decoded_forward):
+                    return f"Forward shift {offset}: {decoded_forward}"
+                
+                decoded_backward = self._apply_char_shift(text, -offset)
+                if self._looks_valid(decoded_backward):
+                    return f"Backward shift {offset}: {decoded_backward}"
+            return None
+        except:
+            return None
 
+    def _apply_char_shift(self, text, offset):
+        result = []
+        for char in text:
+            new_code = ord(char) + offset
+            if new_code < 0:
+                new_code += 0x110000
+            new_code %= 0x110000
+            result.append(chr(new_code))
+        return ''.join(result)
+
+    def _looks_valid(self, text):
+        if not text:
+            return False
+        valid_chars = 0
+        for char in text:
+            code = ord(char)
+            if (32 <= code <= 126) or (0x4E00 <= code <= 0x9FFF):
+                valid_chars += 1
+        return valid_chars / len(text) > 0.5  
     def try_caesar_cipher(self, data):
         try:
             text = data.decode()
