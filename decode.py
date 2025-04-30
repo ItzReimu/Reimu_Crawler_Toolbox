@@ -12,6 +12,7 @@ import argparse
 import re
 import jwt
 from collections import defaultdict
+import string
 
 class AdvancedMultiDecoder:
     MORSE_CODE_DICT = { 
@@ -50,7 +51,7 @@ class AdvancedMultiDecoder:
             self.try_encryption, self.identify_hash, self.try_reverse, 
             self.try_uuencode, self.try_xxencode, self.try_rot47,
             self.try_vigenere, self.try_affine, self.try_railfence,
-            self.try_binary_to_text, self.try_hexdump, self.try_manchester
+            self.try_binary_to_text, self.try_hexdump, self.try_manchester, self.try_unicode_codepoint
         ]
     
     # ========== 编码/解码方法 ==========
@@ -222,7 +223,52 @@ class AdvancedMultiDecoder:
             return str(decoded)
         except:
             return None
-    
+    # 4/30新加unicode码点解密
+    def try_unicode_codepoint(self, data):
+        try:
+            text = data.decode('utf-8', errors='ignore')
+            decoded = []
+            i = 0
+            n = len(text)
+            
+            while i < n:
+                if i + 2 < n and text[i] == '\\' and text[i+1] == 'u':
+
+                    hex_str = text[i+2:i+6]
+                    if len(hex_str) == 4 and all(c in string.hexdigits for c in hex_str):
+                        decoded.append(chr(int(hex_str, 16)))
+                        i += 6
+                        continue
+                elif i + 2 < n and text[i].upper() == 'U' and text[i+1] == '+':
+
+                    j = i + 2
+                    hex_str = ''
+                    while j < n and len(hex_str) < 5 and text[j] in string.hexdigits:
+                        hex_str += text[j]
+                        j += 1
+                    if hex_str:
+                        decoded.append(chr(int(hex_str, 16)))
+                        i = j
+                        continue
+                elif i + 3 < n and text[i] == '&' and text[i+1] == '#' and text[i+2] == 'x':
+
+                    end = text.find(';', i+3)
+                    if end != -1:
+                        hex_str = text[i+3:end]
+                        if 1 <= len(hex_str) <= 5 and all(c in string.hexdigits for c in hex_str):
+                            decoded.append(chr(int(hex_str, 16)))
+                            i = end + 1
+                            continue
+                
+                decoded.append(text[i])
+                i += 1
+            
+            return ''.join(decoded)
+        except:
+            return None
+
+
+
     def try_caesar_cipher(self, data):
         try:
             text = data.decode()
@@ -420,7 +466,6 @@ class AdvancedMultiDecoder:
             if not text.isalpha():
                 return None
             
-            # 简单实现，需要密钥，这里只展示方法
             def decrypt(ciphertext, key):
                 key_length = len(key)
                 key_as_int = [ord(i) for i in key]
@@ -431,7 +476,6 @@ class AdvancedMultiDecoder:
                     plaintext += chr(value + ord('A'))
                 return plaintext
             
-            # 尝试常见密钥
             results = []
             for key in ['KEY', 'SECRET', 'PASSWORD', 'CRYPTO']:
                 results.append(f"Key '{key}': {decrypt(text.upper(), key.upper())}")
@@ -463,13 +507,12 @@ class AdvancedMultiDecoder:
                         plaintext += char
                 return plaintext
             
-            # 尝试常见a和b值
             results = []
             for a in [1, 3, 5, 7, 9, 11, 15, 17, 19, 21, 23, 25]:
                 for b in range(26):
                     results.append(f"a={a}, b={b}: {decrypt(text, a, b)}")
             
-            return "\n".join(results[:10])  # 限制返回结果数量
+            return "\n".join(results[:10])
         except:
             return None
     
@@ -501,7 +544,6 @@ class AdvancedMultiDecoder:
                 
                 return ''.join(result)
             
-            # 尝试2-5轨
             results = []
             for rails in range(2, 6):
                 results.append(f"Rails={rails}: {decrypt(text, rails)}")
@@ -513,12 +555,9 @@ class AdvancedMultiDecoder:
     def try_binary_to_text(self, data):
         try:
             binary_str = data.decode().replace(' ', '')
-            # 检查是否是8的倍数
             if len(binary_str) % 8 != 0:
                 return None
-            # 分割成8位一组
             bytes_list = [binary_str[i:i+8] for i in range(0, len(binary_str), 8)]
-            # 转换为字符
             return ''.join([chr(int(byte, 2)) for byte in bytes_list])
         except:
             return None
