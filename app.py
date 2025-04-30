@@ -1,9 +1,23 @@
-from crypt import methods
 from flask import Flask, render_template, request, jsonify
 import re
 import json
 from user_agents import parse
 import random
+import os
+import importlib
+def process_input(text):
+    module_path = os.path.join(os.path.dirname(__file__), 'decode.py')
+    spec = importlib.util.spec_from_file_location('decode_internal', module_path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.process_input(text)
+
+def process_binary(data):
+    module_path = os.path.join(os.path.dirname(__file__), 'decode.py')
+    spec = importlib.util.spec_from_file_location('decode_internal', module_path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.process_binary(data)
 
 app = Flask(__name__)
 
@@ -199,10 +213,16 @@ def get_client_ip_info():
 
 @app.route('/decode', methods=['GET','POST'])
 def decode():
-    pass
+    results = []
+    error = ''
+    input_text = request.form.get('input_text', '') if request.method == 'POST' else ''
+    if request.method == 'POST':
+        resp = process_input(input_text)
+        if resp.get('status') == 'success':
+            results = resp.get('results', [])
+        else:
+            error = resp.get('message', '解码失败')
+    return render_template('decode.html', input_text=input_text, results=results, error=error)
 
 if __name__ == '__main__':
     app.run(debug=True, port=4303, host='0.0.0.0')
-
-
-

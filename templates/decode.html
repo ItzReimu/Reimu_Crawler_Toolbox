@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}多算法解码工具{% endblock %}
+
+{% block content %}
+<div class="card mt-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">多算法解码工具</h5>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            <div class="mb-3">
+                <label for="input_text" class="form-label">输入内容：</label>
+                <textarea class="form-control" id="input_text" name="input_text" rows="4" placeholder="请输入需要解码的内容">{{ input_text or '' }}</textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">一键解码</button>
+        </form>
+        <div class="mt-4">
+            <label class="form-label">解码结果：</label>
+            {% if results %}
+                <ul class="list-group">
+                {% for r in results %}
+                    <li class="list-group-item">
+                        {% for k, v in r.items() %}
+                            <b>{{k}}:</b> <span style="word-break:break-all;">{{v}}</span><br>
+                        {% endfor %}
+                    </li>
+                {% endfor %}
+                </ul>
+            {% elif error %}
+                <div class="alert alert-danger mt-3">{{ error }}</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
