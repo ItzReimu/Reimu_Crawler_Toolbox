@@ -51,7 +51,8 @@ class AdvancedMultiDecoder:
             self.try_encryption, self.identify_hash, self.try_reverse, 
             self.try_uuencode, self.try_xxencode, self.try_rot47,
             self.try_vigenere, self.try_affine, self.try_railfence,
-            self.try_binary_to_text, self.try_hexdump, self.try_manchester, self.try_unicode_codepoint
+            self.try_binary_to_text, self.try_hexdump, self.try_manchester, self.try_unicode_codepoint,
+            self.try_a1z26
         ]
     
     # ========== 编码/解码方法 ==========
@@ -223,6 +224,58 @@ class AdvancedMultiDecoder:
             return str(decoded)
         except:
             return None
+    # 5/1 添加a1z26解密
+
+    def try_a1z26(self, data):
+        try:
+            text = data.decode('utf-8', errors='ignore').upper()
+            
+            # 尝试三种常见格式
+            results = []
+            for separator in [' ', '-', '']:
+                decoded = self._decode_a1z26(text, separator)
+                if decoded and self._looks_valid(decoded):
+                    results.append(f"Format '{separator or 'none'}': {decoded}")
+            
+            return "\n".join(results) if results else None
+        except:
+            return None
+
+    def _decode_a1z26(self, text, separator):
+        parts = []
+        if separator:
+            for part in text.split(separator):
+                if part.isdigit():
+                    num = int(part)
+                    if 1 <= num <= 26:
+                        parts.append(chr(num + 64))
+                else:
+                    parts.append(part)
+        else:
+            i = 0
+            while i < len(text):
+                if text[i].isdigit():
+                    num_str = ''
+                    while i < len(text) and text[i].isdigit():
+                        num_str += text[i]
+                        i += 1
+                    num = int(num_str)
+                    if 1 <= num <= 26:
+                        parts.append(chr(num + 64))
+                else:
+                    parts.append(text[i])
+                    i += 1
+        
+        return ''.join(parts)
+    def encode_a1z26(self, data, separator=' '):
+        text = data.decode('utf-8', errors='ignore').upper()
+        encoded = []
+        for char in text:
+            if 'A' <= char <= 'Z':
+                encoded.append(str(ord(char) - 64))
+            else:
+                encoded.append(char)
+        return separator.join(encoded)
     # 4/30新加unicode码点解密和字符偏移
     def try_unicode_codepoint(self, data):
         try:
