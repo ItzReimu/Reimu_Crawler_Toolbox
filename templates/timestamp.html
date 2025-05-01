@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}时间戳转换工具{% endblock %}
+
+{% block content %}
+<div class="card mt-4">
+    <div class="card-header bg-warning text-white">
+        <h5 class="mb-0">时间戳转换工具</h5>
+    </div>
+    <div class="card-body">
+        <ul class="nav nav-tabs" id="timestampTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="from-timestamp-tab" data-bs-toggle="tab" data-bs-target="#from-timestamp" type="button" role="tab">时间戳转日期时间</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="to-timestamp-tab" data-bs-toggle="tab" data-bs-target="#to-timestamp" type="button" role="tab">日期时间转时间戳</button>
+            </li>
+        </ul>
+        
+        <div class="tab-content mt-3" id="timestampTabContent">
+            <div class="tab-pane fade show active" id="from-timestamp" role="tabpanel">
+                <form id="fromTimestampForm">
+                    <div class="mb-3">
+                        <label for="timestamp_input" class="form-label">输入时间戳：</label>
+                        <input type="text" class="form-control" id="timestamp_input" name="timestamp" placeholder="支持秒级或毫秒级时间戳">
+                        <div class="form-text">例如：1672567200（秒）或 1672567200000（毫秒）</div>
+                    </div>
+                    <button type="submit" class="btn btn-warning">转换为日期时间</button>
+                </form>
+                <div class="mt-3" id="fromTimestampResult" style="display: none;">
+                    <div class="alert alert-success">
+                        <h6>转换结果：</h6>
+                        <div class="mb-2">
+                            <strong>标准格式：</strong> <span id="datetime_standard"></span>
+                            <button class="btn btn-sm btn-outline-secondary ms-2" onclick="copyText('datetime_standard')">复制</button>
+                        </div>
+                        <div>
+                            <strong>ISO格式：</strong> <span id="datetime_iso"></span>
+                            <button class="btn btn-sm btn-outline-secondary ms-2" onclick="copyText('datetime_iso')">复制</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-pane fade" id="to-timestamp" role="tabpanel">
+                <form id="toTimestampForm">
+                    <div class="mb-3">
+                        <label for="date_input" class="form-label">输入日期时间：</label>
+                        <input type="datetime-local" class="form-control" id="date_input" name="date_str">
+                        <div class="form-text">支持ISO 8601格式，如：2023-01-01T12:00:00</div>
+                    </div>
+                    <button type="submit" class="btn btn-warning">转换为时间戳</button>
+                </form>
+                <div class="mt-3" id="toTimestampResult" style="display: none;">
+                    <div class="alert alert-success">
+                        <h6>转换结果：</h6>
+                        <div class="mb-2">
+                            <strong>秒级时间戳：</strong> <span id="timestamp_seconds"></span>
+                            <button class="btn btn-sm btn-outline-secondary ms-2" onclick="copyText('timestamp_seconds')">复制</button>
+                        </div>
+                        <div>
+                            <strong>毫秒级时间戳：</strong> <span id="timestamp_milliseconds"></span>
+                            <button class="btn btn-sm btn-outline-secondary ms-2" onclick="copyText('timestamp_milliseconds')">复制</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    
+    document.getElementById('date_input').value = `${year}-${month}-${day}T${hours}:${minutes}`;
+    document.getElementById('timestamp_input').value = Math.floor(now.getTime() / 1000);
+});
+
+document.getElementById('toTimestampForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const dateStr = document.getElementById('date_input').value;
+    
+    if (!dateStr) {
+        alert('请输入日期时间');
+        return;
+    }
+    
+    fetch('/timestamp', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `action=to_timestamp&date_str=${encodeURIComponent(dateStr)}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('timestamp_seconds').textContent = data.timestamp;
+            document.getElementById('timestamp_milliseconds').textContent = data.timestamp_ms;
+            document.getElementById('toTimestampResult').style.display = 'block';
+        } else {
+            alert(data.error || '转换失败');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('请求过程中出错');
+    });
+});
+
+document.getElementById('fromTimestampForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const timestamp = document.getElementById('timestamp_input').value;
+    
+    if (!timestamp) {
+        alert('请输入时间戳');
+        return;
+    }
+    
+    fetch('/timestamp', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `action=from_timestamp&timestamp=${encodeURIComponent(timestamp)}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('datetime_standard').textContent = data.datetime;
+            document.getElementById('datetime_iso').textContent = data.iso;
+            document.getElementById('fromTimestampResult').style.display = 'block';
+        } else {
+            alert(data.error || '转换失败');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('请求过程中出错');
+    });
+});
+
+function copyText(elementId) {
+    const text = document.getElementById(elementId).textContent;
+    navigator.clipboard.writeText(text)
+        .then(() => {
+            alert('已复制到剪贴板');
+        })
+        .catch(err => {
+            console.error('复制失败:', err);
+            alert('复制失败');
+        });
+}
+</script>
+{% endblock %}

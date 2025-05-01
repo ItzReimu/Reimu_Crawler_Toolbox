@@ -5,6 +5,8 @@ from user_agents import parse
 import random
 import os
 import importlib
+import datetime
+
 def process_input(text):
     module_path = os.path.join(os.path.dirname(__file__), 'decode.py')
     spec = importlib.util.spec_from_file_location('decode_internal', module_path)
@@ -223,6 +225,53 @@ def decode():
         else:
             error = resp.get('message', '解码失败')
     return render_template('decode.html', input_text=input_text, results=results, error=error)
+
+@app.route('/timestamp', methods=['GET', 'POST'])
+def timestamp():
+    result = {}
+    if request.method == 'POST':
+        action = request.form.get('action', '')
+        
+        if action == 'to_timestamp':
+            # 日期时间转时间戳
+            date_str = request.form.get('date_str', '')
+            try:
+                # 尝试解析日期时间字符串
+                dt = datetime.datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+                timestamp = int(dt.timestamp())
+                result = {
+                    'success': True,
+                    'timestamp': timestamp,
+                    'timestamp_ms': timestamp * 1000
+                }
+            except Exception as e:
+                result = {
+                    'success': False,
+                    'error': f'转换失败: {str(e)}'
+                }
+        
+        elif action == 'from_timestamp':
+            timestamp_str = request.form.get('timestamp', '')
+            try:
+                timestamp = int(timestamp_str)
+                if timestamp > 253402300799:
+                    timestamp = timestamp / 1000
+                
+                dt = datetime.datetime.fromtimestamp(timestamp)
+                result = {
+                    'success': True,
+                    'datetime': dt.strftime('%Y-%m-%d %H:%M:%S'),
+                    'iso': dt.isoformat()
+                }
+            except Exception as e:
+                result = {
+                    'success': False,
+                    'error': f'转换失败: {str(e)}'
+                }
+        
+        return jsonify(result)
+    
+    return render_template('timestamp.html')
 
 if __name__ == '__main__':
     app.run(debug=True, port=4303, host='0.0.0.0')
