@@ -82,15 +82,13 @@ MIT License
 - 推荐Python3.10+
 - 相关第三方包
 ```
-  Flask
-  user-agents
-  pycryptodome
-  base58
-  python-jose
-  requests
-  jsonschema
-  werkzeug
-  PyJWT
+Flask==3.1.0
+user-agents==2.2.0
+pycryptodome==3.22.0
+base58==2.1.1
+requests==2.32.3
+Werkzeug==3.1.3
+PyJWT==2.10.1
 ```
 
 
